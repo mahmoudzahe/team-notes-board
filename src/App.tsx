@@ -4,10 +4,7 @@ import NoteForm from "./components/NoteForm";
 import NotesControls from "./components/NotesControls";
 import NotesList from "./components/NotesList";
 import { initialNotes } from "./data/initialNotes";
-import {
-    notesReducer,
-    type BoardState
-} from "./reducer/notesReducer";
+import { notesReducer, type BoardState } from "./reducer/notesReducer";
 import type {
     NoteFormValues,
     NoteStatus,
@@ -23,15 +20,10 @@ const initialState: BoardState = {
 };
 
 function App() {
-    const [state, dispatch] = useReducer(
-        notesReducer,
-        initialState
-    );
+    const [state, dispatch] = useReducer(notesReducer, initialState);
 
     const editingNote =
-        state.notes.find(
-            (note) => note.id === state.editingNoteId
-        ) ?? null;
+        state.notes.find((note) => note.id === state.editingNoteId) ?? null;
 
     const visibleNotes = useMemo(() => {
         const search = state.searchTerm.trim().toLowerCase();
@@ -48,11 +40,7 @@ function App() {
 
             return matchesSearch && matchesStatus;
         });
-    }, [
-        state.notes,
-        state.searchTerm,
-        state.statusFilter
-    ]);
+    }, [state.notes, state.searchTerm, state.statusFilter]);
 
     const importantNotes = state.notes.filter(
         (note) => note.important
@@ -67,6 +55,7 @@ function App() {
                     ...values
                 }
             });
+
             return;
         }
 
@@ -85,16 +74,51 @@ function App() {
     ) => {
         dispatch({
             type: "CHANGE_STATUS",
-            payload: { id, status }
+            payload: {
+                id,
+                status
+            }
         });
     };
 
-    const handleFilterChange = (
-        value: StatusFilter
-    ) => {
+    const handleFilterChange = (value: StatusFilter) => {
         dispatch({
             type: "SET_FILTER",
             payload: value
+        });
+    };
+
+    const handleSearchChange = (value: string) => {
+        dispatch({
+            type: "SET_SEARCH",
+            payload: value
+        });
+    };
+
+    const handleEdit = (id: number) => {
+        dispatch({
+            type: "START_EDIT",
+            payload: id
+        });
+    };
+
+    const handleDelete = (id: number) => {
+        dispatch({
+            type: "DELETE_NOTE",
+            payload: id
+        });
+    };
+
+    const handleToggleImportant = (id: number) => {
+        dispatch({
+            type: "TOGGLE_IMPORTANT",
+            payload: id
+        });
+    };
+
+    const handleCancelEdit = () => {
+        dispatch({
+            type: "CANCEL_EDIT"
         });
     };
 
@@ -109,21 +133,14 @@ function App() {
                 <NoteForm
                     editingNote={editingNote}
                     onSubmit={handleSubmit}
-                    onCancelEdit={() =>
-                        dispatch({ type: "CANCEL_EDIT" })
-                    }
+                    onCancelEdit={handleCancelEdit}
                 />
 
                 <div className="notes-area">
                     <NotesControls
                         searchTerm={state.searchTerm}
                         statusFilter={state.statusFilter}
-                        onSearchChange={(value) =>
-                            dispatch({
-                                type: "SET_SEARCH",
-                                payload: value
-                            })
-                        }
+                        onSearchChange={handleSearchChange}
                         onFilterChange={handleFilterChange}
                     />
 
@@ -137,25 +154,10 @@ function App() {
 
                     <NotesList
                         notes={visibleNotes}
-                        onEdit={(id) =>
-                            dispatch({
-                                type: "START_EDIT",
-                                payload: id
-                            })
-                        }
-                        onDelete={(id) =>
-                            dispatch({
-                                type: "DELETE_NOTE",
-                                payload: id
-                            })
-                        }
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
                         onStatusChange={handleStatusChange}
-                        onToggleImportant={(id) =>
-                            dispatch({
-                                type: "TOGGLE_IMPORTANT",
-                                payload: id
-                            })
-                        }
+                        onToggleImportant={handleToggleImportant}
                     />
                 </div>
             </div>
