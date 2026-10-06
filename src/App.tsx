@@ -1,15 +1,28 @@
-import { useMemo, useReducer } from "react";
+import {
+    useMemo,
+    useReducer,
+    useState
+} from "react";
+
 import BoardHeader from "./components/BoardHeader";
-import NoteForm from "./components/NoteForm";
+import DeleteConfirmDialog from "./components/DeleteConfirmDialog";
+import NoteDialog from "./components/NoteDialog";
 import NotesControls from "./components/NotesControls";
 import NotesList from "./components/NotesList";
+
 import { initialNotes } from "./data/initialNotes";
-import { notesReducer, type BoardState } from "./reducer/notesReducer";
+
+import {
+    notesReducer,
+    type BoardState
+} from "./reducer/notesReducer";
+
 import type {
     NoteFormValues,
     NoteStatus,
     StatusFilter
 } from "./types/Note";
+
 import "./App.css";
 
 const initialState: BoardState = {
@@ -20,33 +33,81 @@ const initialState: BoardState = {
 };
 
 function App() {
-    const [state, dispatch] = useReducer(notesReducer, initialState);
+    const [state, dispatch] = useReducer(
+        notesReducer,
+        initialState
+    );
+
+    const [
+        isNoteDialogOpen,
+        setIsNoteDialogOpen
+    ] = useState(false);
+
+    const [
+        noteToDeleteId,
+        setNoteToDeleteId
+    ] = useState<number | null>(null);
 
     const editingNote =
-        state.notes.find((note) => note.id === state.editingNoteId) ?? null;
+        state.notes.find(
+            (note) =>
+                note.id === state.editingNoteId
+        ) ?? null;
+
+    const noteToDelete =
+        state.notes.find(
+            (note) =>
+                note.id === noteToDeleteId
+        ) ?? null;
 
     const visibleNotes = useMemo(() => {
-        const search = state.searchTerm.trim().toLowerCase();
+        const search =
+            state.searchTerm
+                .trim()
+                .toLowerCase();
 
         return state.notes.filter((note) => {
             const matchesSearch =
                 !search ||
-                note.title.toLowerCase().includes(search) ||
-                note.description.toLowerCase().includes(search);
+                note.title
+                    .toLowerCase()
+                    .includes(search) ||
+                note.description
+                    .toLowerCase()
+                    .includes(search);
 
             const matchesStatus =
                 state.statusFilter === "All" ||
-                note.status === state.statusFilter;
+                note.status ===
+                    state.statusFilter;
 
-            return matchesSearch && matchesStatus;
+            return (
+                matchesSearch &&
+                matchesStatus
+            );
         });
-    }, [state.notes, state.searchTerm, state.statusFilter]);
+    }, [
+        state.notes,
+        state.searchTerm,
+        state.statusFilter
+    ]);
 
-    const importantNotes = state.notes.filter(
-        (note) => note.important
-    ).length;
+    const importantNotes =
+        state.notes.filter(
+            (note) => note.important
+        ).length;
 
-    const handleSubmit = (values: NoteFormValues) => {
+    const handleAddNote = () => {
+        dispatch({
+            type: "CANCEL_EDIT"
+        });
+
+        setIsNoteDialogOpen(true);
+    };
+
+    const handleSubmit = (
+        values: NoteFormValues
+    ) => {
         if (editingNote) {
             dispatch({
                 type: "UPDATE_NOTE",
@@ -56,6 +117,7 @@ function App() {
                 }
             });
 
+            setIsNoteDialogOpen(false);
             return;
         }
 
@@ -66,6 +128,8 @@ function App() {
                 ...values
             }
         });
+
+        setIsNoteDialogOpen(false);
     };
 
     const handleStatusChange = (
@@ -81,86 +145,171 @@ function App() {
         });
     };
 
-    const handleFilterChange = (value: StatusFilter) => {
+    const handleFilterChange = (
+        value: StatusFilter
+    ) => {
         dispatch({
             type: "SET_FILTER",
             payload: value
         });
     };
 
-    const handleSearchChange = (value: string) => {
+    const handleSearchChange = (
+        value: string
+    ) => {
         dispatch({
             type: "SET_SEARCH",
             payload: value
         });
     };
 
-    const handleEdit = (id: number) => {
+    const handleEdit = (
+        id: number
+    ) => {
         dispatch({
             type: "START_EDIT",
             payload: id
         });
+
+        setIsNoteDialogOpen(true);
     };
 
-    const handleDelete = (id: number) => {
+    const handleDelete = (
+        id: number
+    ) => {
+        setNoteToDeleteId(id);
+    };
+
+    const handleConfirmDelete = () => {
+        if (noteToDeleteId === null) {
+            return;
+        }
+
         dispatch({
             type: "DELETE_NOTE",
-            payload: id
+            payload: noteToDeleteId
         });
+
+        setNoteToDeleteId(null);
     };
 
-    const handleToggleImportant = (id: number) => {
+    const handleCancelDelete = () => {
+        setNoteToDeleteId(null);
+    };
+
+    const handleToggleImportant = (
+        id: number
+    ) => {
         dispatch({
             type: "TOGGLE_IMPORTANT",
             payload: id
         });
     };
 
-    const handleCancelEdit = () => {
+    const handleCloseDialog = () => {
         dispatch({
             type: "CANCEL_EDIT"
         });
+
+        setIsNoteDialogOpen(false);
     };
 
     return (
         <main className="app-shell">
             <BoardHeader
-                totalNotes={state.notes.length}
-                importantNotes={importantNotes}
+                totalNotes={
+                    state.notes.length
+                }
+                importantNotes={
+                    importantNotes
+                }
             />
 
-            <div className="board-layout">
-                <NoteForm
-                    editingNote={editingNote}
-                    onSubmit={handleSubmit}
-                    onCancelEdit={handleCancelEdit}
+            <div className="board-content">
+                <div className="board-actions">
+                    <button
+                        type="button"
+                        className="add-note-button"
+                        onClick={
+                            handleAddNote
+                        }
+                    >
+                        + Add Note
+                    </button>
+                </div>
+
+                <NotesControls
+                    searchTerm={
+                        state.searchTerm
+                    }
+                    statusFilter={
+                        state.statusFilter
+                    }
+                    onSearchChange={
+                        handleSearchChange
+                    }
+                    onFilterChange={
+                        handleFilterChange
+                    }
                 />
 
-                <div className="notes-area">
-                    <NotesControls
-                        searchTerm={state.searchTerm}
-                        statusFilter={state.statusFilter}
-                        onSearchChange={handleSearchChange}
-                        onFilterChange={handleFilterChange}
-                    />
+                <div className="results-row">
+                    <h2>Shared notes</h2>
 
-                    <div className="results-row">
-                        <h2>Shared notes</h2>
-                        <span>
-                            {visibleNotes.length} result
-                            {visibleNotes.length === 1 ? "" : "s"}
-                        </span>
-                    </div>
-
-                    <NotesList
-                        notes={visibleNotes}
-                        onEdit={handleEdit}
-                        onDelete={handleDelete}
-                        onStatusChange={handleStatusChange}
-                        onToggleImportant={handleToggleImportant}
-                    />
+                    <span>
+                        {
+                            visibleNotes.length
+                        }{" "}
+                        result
+                        {
+                            visibleNotes.length ===
+                            1
+                                ? ""
+                                : "s"
+                        }
+                    </span>
                 </div>
+
+                <NotesList
+                    notes={visibleNotes}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onStatusChange={
+                        handleStatusChange
+                    }
+                    onToggleImportant={
+                        handleToggleImportant
+                    }
+                />
             </div>
+
+            {isNoteDialogOpen && (
+                <NoteDialog
+                    editingNote={
+                        editingNote
+                    }
+                    onSubmit={
+                        handleSubmit
+                    }
+                    onClose={
+                        handleCloseDialog
+                    }
+                />
+            )}
+
+            {noteToDelete && (
+                <DeleteConfirmDialog
+                    noteTitle={
+                        noteToDelete.title
+                    }
+                    onConfirm={
+                        handleConfirmDelete
+                    }
+                    onCancel={
+                        handleCancelDelete
+                    }
+                />
+            )}
         </main>
     );
 }
