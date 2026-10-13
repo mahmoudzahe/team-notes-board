@@ -1,8 +1,13 @@
+
+import { useMemo, useReducer, useState } from "react";
 import {
-    useMemo,
-    useReducer,
-    useState
-} from "react";
+  Box,
+  Button,
+  Container,
+  Stack,
+  Typography,
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 
 import BoardHeader from "./components/BoardHeader";
 import DeleteConfirmDialog from "./components/DeleteConfirmDialog";
@@ -11,307 +16,218 @@ import NotesControls from "./components/NotesControls";
 import NotesList from "./components/NotesList";
 
 import { initialNotes } from "./data/initialNotes";
-
-import {
-    notesReducer,
-    type BoardState
-} from "./reducer/notesReducer";
-
+import { notesReducer, type BoardState } from "./reducer/notesReducer";
 import type {
-    NoteFormValues,
-    NoteStatus,
-    StatusFilter
+  NoteFormValues,
+  NoteStatus,
+  StatusFilter,
 } from "./types/Note";
 
-import "./App.css";
-
 const initialState: BoardState = {
-    notes: initialNotes,
-    searchTerm: "",
-    statusFilter: "All",
-    editingNoteId: null
+  notes: initialNotes,
+  searchTerm: "",
+  statusFilter: "All",
+  editingNoteId: null,
 };
 
 function App() {
-    const [state, dispatch] = useReducer(
-        notesReducer,
-        initialState
-    );
+  const [state, dispatch] = useReducer(notesReducer, initialState);
+  const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
+  const [noteToDeleteId, setNoteToDeleteId] = useState<number | null>(null);
 
-    const [
-        isNoteDialogOpen,
-        setIsNoteDialogOpen
-    ] = useState(false);
+  const editingNote =
+    state.notes.find((note) => note.id === state.editingNoteId) ?? null;
 
-    const [
-        noteToDeleteId,
-        setNoteToDeleteId
-    ] = useState<number | null>(null);
+  const noteToDelete =
+    state.notes.find((note) => note.id === noteToDeleteId) ?? null;
 
-    const editingNote =
-        state.notes.find(
-            (note) =>
-                note.id === state.editingNoteId
-        ) ?? null;
+  const visibleNotes = useMemo(() => {
+    const search = state.searchTerm.trim().toLowerCase();
 
-    const noteToDelete =
-        state.notes.find(
-            (note) =>
-                note.id === noteToDeleteId
-        ) ?? null;
+    return state.notes.filter((note) => {
+      const matchesSearch =
+        !search ||
+        note.title.toLowerCase().includes(search) ||
+        note.description.toLowerCase().includes(search);
 
-    const visibleNotes = useMemo(() => {
-        const search =
-            state.searchTerm
-                .trim()
-                .toLowerCase();
+      const matchesStatus =
+        state.statusFilter === "All" ||
+        note.status === state.statusFilter;
 
-        return state.notes.filter((note) => {
-            const matchesSearch =
-                !search ||
-                note.title
-                    .toLowerCase()
-                    .includes(search) ||
-                note.description
-                    .toLowerCase()
-                    .includes(search);
+      return matchesSearch && matchesStatus;
+    });
+  }, [state.notes, state.searchTerm, state.statusFilter]);
 
-            const matchesStatus =
-                state.statusFilter === "All" ||
-                note.status ===
-                    state.statusFilter;
+  const importantNotes = state.notes.filter(
+    (note) => note.important
+  ).length;
 
-            return (
-                matchesSearch &&
-                matchesStatus
-            );
-        });
-    }, [
-        state.notes,
-        state.searchTerm,
-        state.statusFilter
-    ]);
+  const handleAddNote = () => {
+    dispatch({ type: "CANCEL_EDIT" });
+    setIsNoteDialogOpen(true);
+  };
 
-    const importantNotes =
-        state.notes.filter(
-            (note) => note.important
-        ).length;
+  const handleSubmit = (values: NoteFormValues) => {
+    if (editingNote) {
+      dispatch({
+        type: "UPDATE_NOTE",
+        payload: {
+          id: editingNote.id,
+          ...values,
+        },
+      });
 
-    const handleAddNote = () => {
-        dispatch({
-            type: "CANCEL_EDIT"
-        });
+      setIsNoteDialogOpen(false);
+      return;
+    }
 
-        setIsNoteDialogOpen(true);
-    };
+    dispatch({
+      type: "ADD_NOTE",
+      payload: {
+        id: Date.now(),
+        ...values,
+      },
+    });
 
-    const handleSubmit = (
-        values: NoteFormValues
-    ) => {
-        if (editingNote) {
-            dispatch({
-                type: "UPDATE_NOTE",
-                payload: {
-                    id: editingNote.id,
-                    ...values
-                }
-            });
+    setIsNoteDialogOpen(false);
+  };
 
-            setIsNoteDialogOpen(false);
-            return;
-        }
+  const handleStatusChange = (id: number, status: NoteStatus) => {
+    dispatch({
+      type: "CHANGE_STATUS",
+      payload: { id, status },
+    });
+  };
 
-        dispatch({
-            type: "ADD_NOTE",
-            payload: {
-                id: Date.now(),
-                ...values
-            }
-        });
+  const handleFilterChange = (value: StatusFilter) => {
+    dispatch({
+      type: "SET_FILTER",
+      payload: value,
+    });
+  };
 
-        setIsNoteDialogOpen(false);
-    };
+  const handleSearchChange = (value: string) => {
+    dispatch({
+      type: "SET_SEARCH",
+      payload: value,
+    });
+  };
 
-    const handleStatusChange = (
-        id: number,
-        status: NoteStatus
-    ) => {
-        dispatch({
-            type: "CHANGE_STATUS",
-            payload: {
-                id,
-                status
-            }
-        });
-    };
+  const handleEdit = (id: number) => {
+    dispatch({
+      type: "START_EDIT",
+      payload: id,
+    });
 
-    const handleFilterChange = (
-        value: StatusFilter
-    ) => {
-        dispatch({
-            type: "SET_FILTER",
-            payload: value
-        });
-    };
+    setIsNoteDialogOpen(true);
+  };
 
-    const handleSearchChange = (
-        value: string
-    ) => {
-        dispatch({
-            type: "SET_SEARCH",
-            payload: value
-        });
-    };
+  const handleDelete = (id: number) => {
+    setNoteToDeleteId(id);
+  };
 
-    const handleEdit = (
-        id: number
-    ) => {
-        dispatch({
-            type: "START_EDIT",
-            payload: id
-        });
+  const handleConfirmDelete = () => {
+    if (noteToDeleteId === null) {
+      return;
+    }
 
-        setIsNoteDialogOpen(true);
-    };
+    dispatch({
+      type: "DELETE_NOTE",
+      payload: noteToDeleteId,
+    });
 
-    const handleDelete = (
-        id: number
-    ) => {
-        setNoteToDeleteId(id);
-    };
+    setNoteToDeleteId(null);
+  };
 
-    const handleConfirmDelete = () => {
-        if (noteToDeleteId === null) {
-            return;
-        }
+  const handleCancelDelete = () => {
+    setNoteToDeleteId(null);
+  };
 
-        dispatch({
-            type: "DELETE_NOTE",
-            payload: noteToDeleteId
-        });
+  const handleToggleImportant = (id: number) => {
+    dispatch({
+      type: "TOGGLE_IMPORTANT",
+      payload: id,
+    });
+  };
 
-        setNoteToDeleteId(null);
-    };
+  const handleCloseDialog = () => {
+    dispatch({ type: "CANCEL_EDIT" });
+    setIsNoteDialogOpen(false);
+  };
 
-    const handleCancelDelete = () => {
-        setNoteToDeleteId(null);
-    };
+  return (
+    <Box component="main" sx={{ py: { xs: 3, md: 6 } }}>
+      <Container maxWidth="lg">
+        <BoardHeader
+          totalNotes={state.notes.length}
+          importantNotes={importantNotes}
+        />
 
-    const handleToggleImportant = (
-        id: number
-    ) => {
-        dispatch({
-            type: "TOGGLE_IMPORTANT",
-            payload: id
-        });
-    };
+        <Stack spacing={3}>
+          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleAddNote}
+            >
+              Add Note
+            </Button>
+          </Box>
 
-    const handleCloseDialog = () => {
-        dispatch({
-            type: "CANCEL_EDIT"
-        });
+          <NotesControls
+            searchTerm={state.searchTerm}
+            statusFilter={state.statusFilter}
+            onSearchChange={handleSearchChange}
+            onFilterChange={handleFilterChange}
+          />
 
-        setIsNoteDialogOpen(false);
-    };
+          <Box>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 2,
+              }}
+            >
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                Shared notes
+              </Typography>
 
-    return (
-        <main className="app-shell">
-            <BoardHeader
-                totalNotes={
-                    state.notes.length
-                }
-                importantNotes={
-                    importantNotes
-                }
+              <Typography variant="body2" color="text.secondary">
+                {visibleNotes.length}{" "}
+                {visibleNotes.length === 1 ? "result" : "results"}
+              </Typography>
+            </Box>
+
+            <NotesList
+              notes={visibleNotes}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onStatusChange={handleStatusChange}
+              onToggleImportant={handleToggleImportant}
             />
+          </Box>
+        </Stack>
+      </Container>
 
-            <div className="board-content">
-                <div className="board-actions">
-                    <button
-                        type="button"
-                        className="add-note-button"
-                        onClick={
-                            handleAddNote
-                        }
-                    >
-                        + Add Note
-                    </button>
-                </div>
+      {isNoteDialogOpen && (
+        <NoteDialog
+          editingNote={editingNote}
+          onSubmit={handleSubmit}
+          onClose={handleCloseDialog}
+        />
+      )}
 
-                <NotesControls
-                    searchTerm={
-                        state.searchTerm
-                    }
-                    statusFilter={
-                        state.statusFilter
-                    }
-                    onSearchChange={
-                        handleSearchChange
-                    }
-                    onFilterChange={
-                        handleFilterChange
-                    }
-                />
-
-                <div className="results-row">
-                    <h2>Shared notes</h2>
-
-                    <span>
-                        {
-                            visibleNotes.length
-                        }{" "}
-                        result
-                        {
-                            visibleNotes.length ===
-                            1
-                                ? ""
-                                : "s"
-                        }
-                    </span>
-                </div>
-
-                <NotesList
-                    notes={visibleNotes}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                    onStatusChange={
-                        handleStatusChange
-                    }
-                    onToggleImportant={
-                        handleToggleImportant
-                    }
-                />
-            </div>
-
-            {isNoteDialogOpen && (
-                <NoteDialog
-                    editingNote={
-                        editingNote
-                    }
-                    onSubmit={
-                        handleSubmit
-                    }
-                    onClose={
-                        handleCloseDialog
-                    }
-                />
-            )}
-
-            {noteToDelete && (
-                <DeleteConfirmDialog
-                    noteTitle={
-                        noteToDelete.title
-                    }
-                    onConfirm={
-                        handleConfirmDelete
-                    }
-                    onCancel={
-                        handleCancelDelete
-                    }
-                />
-            )}
-        </main>
-    );
+      {noteToDelete && (
+        <DeleteConfirmDialog
+          noteTitle={noteToDelete.title}
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
+        />
+      )}
+    </Box>
+  );
 }
 
 export default App;

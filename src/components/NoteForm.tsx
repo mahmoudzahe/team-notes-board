@@ -1,181 +1,164 @@
+
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
+import {
+  Box,
+  Button,
+  Checkbox,
+  DialogActions,
+  DialogContent,
+  FormControlLabel,
+  MenuItem,
+  Stack,
+  TextField,
+} from "@mui/material";
+
 import { noteStatuses } from "../constants/noteOptions";
 import type {
-    Note,
-    NoteFormValues,
-    NoteStatus
+  Note,
+  NoteFormValues,
+  NoteStatus,
 } from "../types/Note";
 
 interface NoteFormProps {
-    editingNote: Note | null;
-    onSubmit: (values: NoteFormValues) => void;
-    onCancelEdit: () => void;
+  editingNote: Note | null;
+  onSubmit: (values: NoteFormValues) => void;
+  onCancelEdit: () => void;
 }
 
 const emptyForm: NoteFormValues = {
-    title: "",
-    description: "",
-    status: "Todo",
-    important: false
+  title: "",
+  description: "",
+  status: "Todo",
+  important: false,
 };
 
 function NoteForm({
-    editingNote,
-    onSubmit,
-    onCancelEdit
+  editingNote,
+  onSubmit,
+  onCancelEdit,
 }: NoteFormProps) {
-    const [formValues, setFormValues] =
-        useState<NoteFormValues>(emptyForm);
+  const [formValues, setFormValues] = useState<NoteFormValues>(emptyForm);
 
-    useEffect(() => {
-        if (editingNote) {
-            setFormValues({
-                title: editingNote.title,
-                description: editingNote.description,
-                status: editingNote.status,
-                important: editingNote.important
-            });
-            return;
-        }
+  useEffect(() => {
+    if (editingNote) {
+      setFormValues({
+        title: editingNote.title,
+        description: editingNote.description,
+        status: editingNote.status,
+        important: editingNote.important,
+      });
+      return;
+    }
 
-        setFormValues(emptyForm);
-    }, [editingNote]);
+    setFormValues(emptyForm);
+  }, [editingNote]);
 
-    const updateField = <K extends keyof NoteFormValues>(
-        field: K,
-        value: NoteFormValues[K]
-    ) => {
-        setFormValues((current) => ({
-            ...current,
-            [field]: value
-        }));
-    };
+  const updateField = <K extends keyof NoteFormValues>(
+    field: K,
+    value: NoteFormValues[K]
+  ) => {
+    setFormValues((current) => ({
+      ...current,
+      [field]: value,
+    }));
+  };
 
-    const handleSubmit = (
-        event: FormEvent<HTMLFormElement>
-    ) => {
-        event.preventDefault();
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
 
-        const title = formValues.title.trim();
-        const description = formValues.description.trim();
+    const title = formValues.title.trim();
+    const description = formValues.description.trim();
 
-        if (!title || !description) {
-            return;
-        }
+    if (!title || !description) {
+      return;
+    }
 
-        onSubmit({
-            ...formValues,
-            title,
-            description
-        });
+    onSubmit({
+      ...formValues,
+      title,
+      description,
+    });
 
-        if (!editingNote) {
-            setFormValues(emptyForm);
-        }
-    };
+    if (!editingNote) {
+      setFormValues(emptyForm);
+    }
+  };
 
-    const handleCancel = () => {
-        setFormValues(emptyForm);
-        onCancelEdit();
-    };
+  const handleCancel = () => {
+    setFormValues(emptyForm);
+    onCancelEdit();
+  };
 
-    return (
-        <section className="note-form-card">
-            <div className="section-heading">
-                <span className="eyebrow">
-                    {editingNote ? "Edit note" : "New note"}
-                </span>
-                <h2>
-                    {editingNote
-                        ? "Update team note"
-                        : "Add a team note"}
-                </h2>
-            </div>
+  return (
+    <Box component="form" onSubmit={handleSubmit}>
+      <DialogContent>
+        <Stack spacing={2} sx={{ pt: 1 }}>
+          <TextField
+            label="Title"
+            placeholder="Note title"
+            fullWidth
+            value={formValues.title}
+            onChange={(event) =>
+              updateField("title", event.target.value)
+            }
+          />
 
-            <form onSubmit={handleSubmit}>
-                <div className="form-group">
-                    <label htmlFor="title">Title</label>
-                    <input
-                        id="title"
-                        value={formValues.title}
-                        onChange={(event) =>
-                            updateField("title", event.target.value)
-                        }
-                        placeholder="Note title"
-                    />
-                </div>
+          <TextField
+            label="Description"
+            placeholder="Write a short description"
+            multiline
+            rows={4}
+            fullWidth
+            value={formValues.description}
+            onChange={(event) =>
+              updateField("description", event.target.value)
+            }
+          />
 
-                <div className="form-group">
-                    <label htmlFor="description">Description</label>
-                    <textarea
-                        id="description"
-                        rows={4}
-                        value={formValues.description}
-                        onChange={(event) =>
-                            updateField(
-                                "description",
-                                event.target.value
-                            )
-                        }
-                        placeholder="Write a short description"
-                    />
-                </div>
+          <TextField
+            select
+            label="Status"
+            fullWidth
+            value={formValues.status}
+            onChange={(event) =>
+              updateField("status", event.target.value as NoteStatus)
+            }
+          >
+            {noteStatuses.map((status) => (
+              <MenuItem key={status} value={status}>
+                {status}
+              </MenuItem>
+            ))}
+          </TextField>
 
-                <div className="form-row">
-                    <div className="form-group">
-                        <label htmlFor="note-status">Status</label>
-                        <select
-                            id="note-status"
-                            value={formValues.status}
-                            onChange={(event) =>
-                                updateField(
-                                    "status",
-                                    event.target.value as NoteStatus
-                                )
-                            }
-                        >
-                            {noteStatuses.map((status) => (
-                                <option key={status} value={status}>
-                                    {status}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+          <FormControlLabel
+            label="Important note"
+            control={
+              <Checkbox
+                checked={formValues.important}
+                onChange={(event) =>
+                  updateField("important", event.target.checked)
+                }
+              />
+            }
+          />
+        </Stack>
+      </DialogContent>
 
-                    <label className="important-check">
-                        <input
-                            type="checkbox"
-                            checked={formValues.important}
-                            onChange={(event) =>
-                                updateField(
-                                    "important",
-                                    event.target.checked
-                                )
-                            }
-                        />
-                        <span>Important note</span>
-                    </label>
-                </div>
+      <DialogActions sx={{ p: 2 }}>
+        {editingNote && (
+          <Button onClick={handleCancel}>
+            Cancel
+          </Button>
+        )}
 
-                <div className="form-actions">
-                    <button className="primary-button" type="submit">
-                        {editingNote ? "Save changes" : "Add note"}
-                    </button>
-
-                    {editingNote && (
-                        <button
-                            className="secondary-button"
-                            type="button"
-                            onClick={handleCancel}
-                        >
-                            Cancel
-                        </button>
-                    )}
-                </div>
-            </form>
-        </section>
-    );
+        <Button type="submit" variant="contained">
+          {editingNote ? "Save changes" : "Add note"}
+        </Button>
+      </DialogActions>
+    </Box>
+  );
 }
 
 export default NoteForm;
