@@ -190,7 +190,7 @@ function App() {
                 mb: 2,
               }}
             >
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              <Typography variant="h6">
                 Shared notes
               </Typography>
 

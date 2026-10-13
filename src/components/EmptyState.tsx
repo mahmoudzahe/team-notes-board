@@ -9,7 +9,6 @@ function EmptyState() {
       sx={{
         py: 8,
         px: 3,
-        borderRadius: 3,
         textAlign: "center",
       }}
     >
@@ -23,15 +22,15 @@ function EmptyState() {
           alignItems: "center",
           justifyContent: "center",
           borderRadius: 2,
-          backgroundColor: "#eef2ff",
-          color: "#4f46e5",
+          bgcolor: "primary.light",
+          color: "primary.main",
         }}
       >
         <SearchOffIcon fontSize="large" />
       </Box>
 
-      <Typography variant="h6" sx={{ fontWeight: 700 }}>
-       No notes found
+      <Typography variant="h6">
+        No notes found
       </Typography>
 
       <Typography color="text.secondary" sx={{ mt: 1 }}>

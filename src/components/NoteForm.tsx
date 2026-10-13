@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
+
 import {
   Box,
   Button,
@@ -14,11 +15,7 @@ import {
 } from "@mui/material";
 
 import { noteStatuses } from "../constants/noteOptions";
-import type {
-  Note,
-  NoteFormValues,
-  NoteStatus,
-} from "../types/Note";
+import type { Note, NoteFormValues, NoteStatus } from "../types/Note";
 
 interface NoteFormProps {
   editingNote: Note | null;

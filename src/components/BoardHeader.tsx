@@ -1,5 +1,5 @@
 
-import { Box, Stack, Paper, Typography } from "@mui/material";
+import { Box, Paper, Stack, Typography } from "@mui/material";
 
 interface BoardHeaderProps {
   totalNotes: number;
@@ -22,7 +22,7 @@ function BoardHeader({ totalNotes, importantNotes }: BoardHeaderProps) {
       <Box>
         <Typography
           variant="overline"
-          sx={{ color: "#4f46e5", fontWeight: 700 }}
+          sx={{ color: "primary.main" }}
         >
           Internal team workspace
         </Typography>
@@ -30,11 +30,7 @@ function BoardHeader({ totalNotes, importantNotes }: BoardHeaderProps) {
         <Typography
           variant="h3"
           component="h1"
-          sx={{
-            fontWeight: 700,
-            color: "#111827",
-            fontSize: { xs: "2rem", md: "3rem" },
-          }}
+          sx={{ fontSize: { xs: "2rem", md: "3rem" } }}
         >
           Team Notes Board
         </Typography>
@@ -44,39 +40,19 @@ function BoardHeader({ totalNotes, importantNotes }: BoardHeaderProps) {
         </Typography>
       </Box>
 
-      <Stack
-        direction="row"
-        spacing={1.5}
-        sx={{ width: { xs: "100%", md: "auto" } }}
-      >
-        <Paper
-          variant="outlined"
-          sx={{
-            p: 2,
-            minWidth: 120,
-            flex: { xs: 1, md: "none" },
-            borderRadius: 3,
-          }}
-        >
-          <Typography variant="h6" sx={{ fontWeight: 700 }}>
-           {totalNotes}
+      <Stack direction="row" spacing={2}>
+        <Paper variant="outlined" sx={{ p: 2, minWidth: 120 }}>
+          <Typography variant="h6">
+            {totalNotes}
           </Typography>
           <Typography variant="body2" color="text.secondary">
             Total notes
           </Typography>
         </Paper>
 
-        <Paper
-          variant="outlined"
-          sx={{
-            p: 2,
-            minWidth: 120,
-            flex: { xs: 1, md: "none" },
-            borderRadius: 3,
-          }}
-        >
-          <Typography variant="h6" sx={{ fontWeight: 700 }}>
-           {importantNotes}
+        <Paper variant="outlined" sx={{ p: 2, minWidth: 120 }}>
+          <Typography variant="h6">
+            {importantNotes}
           </Typography>
           <Typography variant="body2" color="text.secondary">
             Important

@@ -45,13 +45,15 @@ function NotesControls({
       />
 
       <FormControl size="small" sx={{ minWidth: 180 }}>
-        <InputLabel id="status-filter-label">Status</InputLabel>
+        <InputLabel id="status-filter-label">
+          Status
+        </InputLabel>
 
         <Select
           labelId="status-filter-label"
           id="status-filter"
-          value={statusFilter}
           label="Status"
+          value={statusFilter}
           onChange={(event) =>
             onFilterChange(event.target.value as StatusFilter)
           }

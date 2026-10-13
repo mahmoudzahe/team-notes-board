@@ -67,17 +67,11 @@ function NoteCard({
           />
 
           <Tooltip
-            title={
-              note.important
-                ? "Remove important"
-                : "Mark as important"
-            }
+            title={note.important ? "Remove important" : "Mark as important"}
           >
             <IconButton
               aria-label={
-                note.important
-                  ? "Remove important"
-                  : "Mark as important"
+                note.important ? "Remove important" : "Mark as important"
               }
               color={note.important ? "warning" : "default"}
               onClick={() => onToggleImportant(note.id)}
@@ -87,10 +81,7 @@ function NoteCard({
           </Tooltip>
         </Stack>
 
-        <Typography
-          variant="h6"
-          sx={{ fontWeight: 600 }}
-        >
+        <Typography variant="h6">
           {note.title}
         </Typography>
 
@@ -124,13 +115,7 @@ function NoteCard({
         </TextField>
       </CardContent>
 
-      <CardActions
-        sx={{
-          justifyContent: "flex-end",
-          px: 2,
-          pb: 2,
-        }}
-      >
+      <CardActions sx={{ justifyContent: "flex-end", px: 2, pb: 2 }}>
         <Tooltip title="Edit note">
           <IconButton
             aria-label="Edit note"
