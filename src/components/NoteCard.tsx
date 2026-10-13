@@ -1,209 +1,143 @@
-import {
-    noteStatuses
-} from "../constants/noteOptions";
 
-import type {
-    Note,
-    NoteStatus
-} from "../types/Note";
+import {
+  Card,
+  CardContent,
+  CardActions,
+  Stack,
+  Chip,
+  Typography,
+  TextField,
+  MenuItem,
+  IconButton,
+  Tooltip,
+} from "@mui/material";
+
+import StarIcon from "@mui/icons-material/Star";
+import StarBorderIcon from "@mui/icons-material/StarBorder";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+
+import { noteStatuses } from "../constants/noteOptions";
+import type { Note, NoteStatus } from "../types/Note";
 
 interface NoteCardProps {
-    note: Note;
-    onEdit: (id: number) => void;
-    onDelete: (id: number) => void;
-    onStatusChange: (
-        id: number,
-        status: NoteStatus
-    ) => void;
-    onToggleImportant: (
-        id: number
-    ) => void;
-}
-
-function EditIcon() {
-    return (
-        <svg
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-        >
-            <path
-                d="M12 20h9"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-            />
-
-            <path
-                d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-            />
-        </svg>
-    );
-}
-
-function DeleteIcon() {
-    return (
-        <svg
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-        >
-            <path
-                d="M3 6h18"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-            />
-
-            <path
-                d="M8 6V4h8v2"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-            />
-
-            <path
-                d="M19 6l-1 14H6L5 6"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-            />
-
-            <path
-                d="M10 11v5M14 11v5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-            />
-        </svg>
-    );
+  note: Note;
+  onEdit: (id: number) => void;
+  onDelete: (id: number) => void;
+  onStatusChange: (id: number, status: NoteStatus) => void;
+  onToggleImportant: (id: number) => void;
 }
 
 function NoteCard({
-    note,
-    onEdit,
-    onDelete,
-    onStatusChange,
-    onToggleImportant
+  note,
+  onEdit,
+  onDelete,
+  onStatusChange,
+  onToggleImportant,
 }: NoteCardProps) {
-    const statusClass =
-        note.status
-            .toLowerCase()
-            .replace(" ", "-");
-
-    return (
-        <article
-            className={`note-card ${
-                note.important
-                    ? "important"
-                    : ""
-            }`}
+  return (
+    <Card
+      variant="outlined"
+      sx={{
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        borderColor: note.important ? "warning.main" : "divider",
+      }}
+    >
+      <CardContent sx={{ flex: 1 }}>
+        <Stack
+          direction="row"
+          sx={{
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 2,
+          }}
         >
-            <div className="note-card-top">
-                <span
-                    className={`status-badge ${statusClass}`}
-                >
-                    {note.status}
-                </span>
+          <Chip
+            label={note.status}
+            size="small"
+            color={
+              note.status === "Done"
+                ? "success"
+                : note.status === "In Progress"
+                  ? "warning"
+                  : "default"
+            }
+          />
 
-                <button
-                    type="button"
-                    className="important-button"
-                    onClick={() =>
-                        onToggleImportant(
-                            note.id
-                        )
-                    }
-                    aria-label={
-                        note.important
-                            ? "Remove important"
-                            : "Mark as important"
-                    }
-                    title={
-                        note.important
-                            ? "Remove important"
-                            : "Mark as important"
-                    }
-                >
-                    {note.important
-                        ? "★"
-                        : "☆"}
-                </button>
-            </div>
+          <Tooltip
+            title={note.important ? "Remove important" : "Mark as important"}
+          >
+            <IconButton
+              aria-label={
+                note.important ? "Remove important" : "Mark as important"
+              }
+              color={note.important ? "warning" : "default"}
+              onClick={() => onToggleImportant(note.id)}
+            >
+              {note.important ? <StarIcon /> : <StarBorderIcon />}
+            </IconButton>
+          </Tooltip>
+        </Stack>
 
-            <h3>{note.title}</h3>
+        <Typography variant="h6">
+          {note.title}
+        </Typography>
 
-            <p className="note-description">
-                {note.description}
-            </p>
+        <Typography
+          color="text.secondary"
+          sx={{
+            mt: 1,
+            mb: 3,
+            lineHeight: 1.6,
+            whiteSpace: "pre-wrap",
+          }}
+        >
+          {note.description}
+        </Typography>
 
-            <div className="status-control">
-                <label
-                    htmlFor={`status-${note.id}`}
-                >
-                    Change status
-                </label>
+        <TextField
+          select
+          fullWidth
+          size="small"
+          label="Change status"
+          value={note.status}
+          onChange={(event) =>
+            onStatusChange(note.id, event.target.value as NoteStatus)
+          }
+        >
+          {noteStatuses.map((status) => (
+            <MenuItem key={status} value={status}>
+              {status}
+            </MenuItem>
+          ))}
+        </TextField>
+      </CardContent>
 
-                <select
-                    id={`status-${note.id}`}
-                    value={note.status}
-                    onChange={(event) =>
-                        onStatusChange(
-                            note.id,
-                            event.target
-                                .value as NoteStatus
-                        )
-                    }
-                >
-                    {noteStatuses.map(
-                        (status) => (
-                            <option
-                                key={status}
-                                value={status}
-                            >
-                                {status}
-                            </option>
-                        )
-                    )}
-                </select>
-            </div>
+      <CardActions sx={{ justifyContent: "flex-end", px: 2, pb: 2 }}>
+        <Tooltip title="Edit note">
+          <IconButton
+            aria-label="Edit note"
+            color="primary"
+            onClick={() => onEdit(note.id)}
+          >
+            <EditIcon />
+          </IconButton>
+        </Tooltip>
 
-            <div className="note-card-actions">
-                <button
-                    type="button"
-                    className="icon-action-button edit-icon-button"
-                    onClick={() =>
-                        onEdit(note.id)
-                    }
-                    aria-label="Edit note"
-                    data-tooltip="Edit note"
-                >
-                    <EditIcon />
-                </button>
-
-                <button
-                    type="button"
-                    className="icon-action-button delete-icon-button"
-                    onClick={() =>
-                        onDelete(note.id)
-                    }
-                    aria-label="Delete note"
-                    data-tooltip="Delete note"
-                >
-                    <DeleteIcon />
-                </button>
-            </div>
-        </article>
-    );
+        <Tooltip title="Delete note">
+          <IconButton
+            aria-label="Delete note"
+            color="error"
+            onClick={() => onDelete(note.id)}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </Tooltip>
+      </CardActions>
+    </Card>
+  );
 }
 
 export default NoteCard;

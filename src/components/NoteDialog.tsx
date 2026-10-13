@@ -1,66 +1,57 @@
-import type { MouseEvent } from "react";
+
+import {
+  Dialog,
+  DialogTitle,
+  IconButton,
+} from "@mui/material";
+
+import CloseIcon from "@mui/icons-material/Close";
+
 import NoteForm from "./NoteForm";
-import type {
-    Note,
-    NoteFormValues
-} from "../types/Note";
+import type { Note, NoteFormValues } from "../types/Note";
 
 interface NoteDialogProps {
-    editingNote: Note | null;
-    onSubmit: (
-        values: NoteFormValues
-    ) => void;
-    onClose: () => void;
+  editingNote: Note | null;
+  onSubmit: (values: NoteFormValues) => void;
+  onClose: () => void;
 }
 
 function NoteDialog({
-    editingNote,
-    onSubmit,
-    onClose
+  editingNote,
+  onSubmit,
+  onClose,
 }: NoteDialogProps) {
-    const handleBackdropClick = () => {
-        onClose();
-    };
+  return (
+    <Dialog
+      open
+      onClose={onClose}
+      fullWidth
+      maxWidth="sm"
+    >
+      <DialogTitle
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        {editingNote ? "Update team note" : "Add a team note"}
 
-    const handleDialogClick = (
-        event: React.MouseEvent<HTMLDivElement>
-    ) => {
-        event.stopPropagation();
-    };
-
-    return (
-        <div
-            className="dialog-backdrop"
-            onClick={handleBackdropClick}
+        <IconButton
+          aria-label="Close dialog"
+          onClick={onClose}
         >
-            <div
-                className="note-dialog"
-                role="dialog"
-                aria-modal="true"
-                aria-label={
-                    editingNote
-                        ? "Edit note"
-                        : "Add note"
-                }
-                onClick={handleDialogClick}
-            >
-                <button
-                    type="button"
-                    className="dialog-close-button"
-                    onClick={onClose}
-                    aria-label="Close dialog"
-                >
-                    ×
-                </button>
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
 
-                <NoteForm
-                    editingNote={editingNote}
-                    onSubmit={onSubmit}
-                    onCancelEdit={onClose}
-                />
-            </div>
-        </div>
-    );
+      <NoteForm
+        editingNote={editingNote}
+        onSubmit={onSubmit}
+        onCancelEdit={onClose}
+      />
+    </Dialog>
+  );
 }
 
 export default NoteDialog;
